@@ -1,6 +1,4 @@
 
-
-```markdown
 # 🏘️ Community Service
 
 <div align="center">
@@ -587,4 +585,3 @@ DEBUG=false
 
 </div>
 ```
-
