@@ -2,7 +2,6 @@
 from __future__ import annotations
 import uuid
 from enum import Enum
-from typing import Optional
 
 from fastapi import Request
 
@@ -73,7 +72,7 @@ class RBACChecker:
                         "action": "rbac_denied",
                     },
                 )
-                raise ForbiddenException(f"Отсутствуют разрешения: {\", \".join(missing)}")
+                raise ForbiddenException(f"Отсутствуют разрешения: {', '.join(missing)}")
         else:
             if not required.intersection(member_permissions):
                 raise ForbiddenException("Недостаточно прав для данного действия")

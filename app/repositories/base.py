@@ -1,7 +1,7 @@
 """Базовый репозиторий с общими CRUD-операциями."""
 from __future__ import annotations
 import uuid
-from typing import Any, Generic, List, Optional, Sequence, Type, TypeVar
+from typing import Any, Generic, Optional, Sequence, Type, TypeVar
 
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession

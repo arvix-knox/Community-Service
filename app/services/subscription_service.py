@@ -28,7 +28,7 @@ class SubscriptionService:
         if not community:
             raise NotFoundException("Community", community_id)
         levels = await self._subscription_repo.get_community_levels(community_id)
-        return [SubscriptionLevelResponse.model_validate(l) for l in levels]
+        return [SubscriptionLevelResponse.model_validate(level) for level in levels]
 
     async def create_level(self, community_id: uuid.UUID, data: SubscriptionLevelCreate, user: UserContext) -> SubscriptionLevelResponse:
         community = await self._community_repo.get_by_id(community_id)

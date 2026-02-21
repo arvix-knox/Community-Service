@@ -20,7 +20,7 @@ class RoleRepository(BaseRepository[Role]):
         return result.scalars().all()
 
     async def get_default_role(self, community_id: uuid.UUID) -> Optional[Role]:
-        stmt = select(Role).where(and_(Role.community_id == community_id, Role.is_default == True))
+        stmt = select(Role).where(and_(Role.community_id == community_id, Role.is_default.is_(True)))
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 

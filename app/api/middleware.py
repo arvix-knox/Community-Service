@@ -7,6 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.core.exceptions import UnauthorizedException
 from app.core.logging import get_logger
 from app.core.security import extract_user_from_token
 
@@ -26,7 +27,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
             try:
                 user = extract_user_from_token(token)
                 request.state.user = user
-            except Exception:
+            except UnauthorizedException:
                 request.state.user = None
         else:
             request.state.user = None

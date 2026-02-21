@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional
 
-from fastapi import Depends, Query, Request
+from fastapi import Query, Request
 
 from app.core.config import settings
 from app.core.security import UserContext, get_current_user, get_optional_user

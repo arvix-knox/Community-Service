@@ -1,7 +1,5 @@
 """Общие схемы."""
 from __future__ import annotations
-import uuid
-from datetime import datetime
 from typing import Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field

@@ -1,19 +1,10 @@
 """Фикстуры для тестов."""
 from __future__ import annotations
-import asyncio
 import uuid
 from typing import AsyncGenerator
 
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 def create_test_token(user_id=None, is_superadmin=False):

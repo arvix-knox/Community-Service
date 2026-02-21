@@ -33,10 +33,10 @@ def decode_jwt_token(token: str) -> dict:
             algorithms=[settings.JWT_ALGORITHM],
         )
         return payload
-    except jwt.ExpiredSignatureError:
-        raise UnauthorizedException("Токен истёк")
-    except jwt.InvalidTokenError as e:
-        raise UnauthorizedException(f"Невалидный токен: {str(e)}")
+    except jwt.ExpiredSignatureError as exc:
+        raise UnauthorizedException("Токен истёк") from exc
+    except jwt.InvalidTokenError as exc:
+        raise UnauthorizedException(f"Невалидный токен: {str(exc)}") from exc
 
 
 def extract_user_from_token(token: str) -> UserContext:
@@ -49,8 +49,8 @@ def extract_user_from_token(token: str) -> UserContext:
 
     try:
         user_id = uuid.UUID(str(user_id_raw))
-    except ValueError:
-        raise UnauthorizedException("Невалидный user_id в токене")
+    except ValueError as exc:
+        raise UnauthorizedException("Невалидный user_id в токене") from exc
 
     return UserContext(
         user_id=user_id,
