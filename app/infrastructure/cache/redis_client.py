@@ -15,9 +15,18 @@ class RedisClient:
     def __init__(self):
         self._redis: Optional[aioredis.Redis] = None
 
+    @staticmethod
+    async def _close_client(redis_client: aioredis.Redis) -> None:
+        close_method = getattr(redis_client, "aclose", None)
+        if close_method is not None:
+            await close_method()
+            return
+        await redis_client.close()
+
     async def connect(self) -> None:
+        redis_client: Optional[aioredis.Redis] = None
         try:
-            self._redis = aioredis.from_url(
+            redis_client = aioredis.from_url(
                 settings.REDIS_URL,
                 encoding="utf-8",
                 decode_responses=True,
@@ -26,15 +35,19 @@ class RedisClient:
                 socket_timeout=5,
                 retry_on_timeout=True,
             )
-            await self._redis.ping()
+            await redis_client.ping()
+            self._redis = redis_client
             logger.info("Redis подключён")
         except Exception as e:
+            if redis_client is not None:
+                await self._close_client(redis_client)
             logger.error(f"Не удалось подключиться к Redis: {e}")
             self._redis = None
 
     async def disconnect(self) -> None:
         if self._redis:
-            await self._redis.close()
+            await self._close_client(self._redis)
+            self._redis = None
             logger.info("Redis отключён")
 
     @property

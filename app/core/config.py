@@ -1,5 +1,6 @@
 """Конфигурация приложения из переменных окружения."""
-from typing import List
+from typing import Any, List
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -54,6 +55,17 @@ class Settings(BaseSettings):
         env_file=".env",
         case_sensitive=True,
     )
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug_value(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"debug", "development", "dev"}:
+                return True
+            if normalized in {"release", "production", "prod"}:
+                return False
+        return value
 
 
 settings = Settings()

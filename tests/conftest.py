@@ -1,10 +1,16 @@
 """Фикстуры для тестов."""
 from __future__ import annotations
+import os
 import uuid
-from typing import AsyncGenerator
+from pathlib import Path
+from typing import Generator
 
-import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from app.core.bootstrap import add_local_venv_site_packages
+
+add_local_venv_site_packages(project_root=Path(__file__).resolve().parents[1])
+
+import pytest
+from fastapi.testclient import TestClient
 
 
 def create_test_token(user_id=None, is_superadmin=False):
@@ -20,19 +26,19 @@ def create_test_token(user_id=None, is_superadmin=False):
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-@pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+@pytest.fixture
+def client() -> Generator[TestClient, None, None]:
+    os.environ["DEBUG"] = "false"
     from main import app
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    with TestClient(app) as tc:
+        yield tc
 
 
-@pytest_asyncio.fixture
-async def auth_client() -> AsyncGenerator[AsyncClient, None]:
+@pytest.fixture
+def auth_client() -> Generator[TestClient, None, None]:
+    os.environ["DEBUG"] = "false"
     from main import app
     token = create_test_token()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test",
-                            headers={"Authorization": f"Bearer {token}"}) as ac:
-        yield ac
+    with TestClient(app) as tc:
+        tc.headers.update({"Authorization": f"Bearer {token}"})
+        yield tc

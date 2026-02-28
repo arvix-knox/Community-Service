@@ -1,4 +1,8 @@
 """Community Service — точка входа."""
+from app.core.bootstrap import add_local_venv_site_packages
+
+add_local_venv_site_packages()
+
 import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

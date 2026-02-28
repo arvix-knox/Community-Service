@@ -1,5 +1,6 @@
 """RabbitMQ Event Publisher."""
 from __future__ import annotations
+from contextlib import suppress
 import json
 from typing import Optional
 
@@ -17,26 +18,40 @@ class RabbitMQEventPublisher(EventPublisher):
         self._exchange = None
 
     async def connect(self) -> None:
+        connection = None
         try:
             import aio_pika
-            self._connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
-            self._channel = await self._connection.channel()
-            self._exchange = await self._channel.declare_exchange(
+            connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
+            channel = await connection.channel()
+            exchange = await channel.declare_exchange(
                 settings.RABBITMQ_EXCHANGE,
                 aio_pika.ExchangeType.TOPIC,
                 durable=True,
             )
+            self._connection = connection
+            self._channel = channel
+            self._exchange = exchange
             logger.info("RabbitMQ publisher подключён")
         except ImportError:
             logger.warning("aio_pika не установлен, RabbitMQ publisher в stub-режиме")
             self._connection = None
+            self._channel = None
+            self._exchange = None
         except Exception as e:
+            if connection is not None:
+                with suppress(Exception):
+                    await connection.close()
             logger.error(f"Не удалось подключиться к RabbitMQ: {e}")
             self._connection = None
+            self._channel = None
+            self._exchange = None
 
     async def disconnect(self) -> None:
         if self._connection:
             await self._connection.close()
+            self._connection = None
+            self._channel = None
+            self._exchange = None
             logger.info("RabbitMQ publisher отключён")
 
     async def publish(self, event: DomainEvent, routing_key: Optional[str] = None) -> None:

@@ -1,5 +1,6 @@
 """Kafka Event Publisher."""
 from __future__ import annotations
+from contextlib import suppress
 import json
 from typing import Optional
 
@@ -15,27 +16,33 @@ class KafkaEventPublisher(EventPublisher):
         self._producer = None
 
     async def connect(self) -> None:
+        producer = None
         try:
             from aiokafka import AIOKafkaProducer
-            self._producer = AIOKafkaProducer(
+            producer = AIOKafkaProducer(
                 bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
                 value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
                 key_serializer=lambda k: k.encode("utf-8") if k else None,
                 acks="all",
                 enable_idempotence=True,
             )
-            await self._producer.start()
+            await producer.start()
+            self._producer = producer
             logger.info("Kafka producer подключён")
         except ImportError:
             logger.warning("aiokafka не установлен, Kafka publisher в stub-режиме")
             self._producer = None
         except Exception as e:
+            if producer is not None:
+                with suppress(Exception):
+                    await producer.stop()
             logger.error(f"Не удалось подключиться к Kafka: {e}")
             self._producer = None
 
     async def disconnect(self) -> None:
         if self._producer:
             await self._producer.stop()
+            self._producer = None
             logger.info("Kafka producer отключён")
 
     async def publish(self, event: DomainEvent, routing_key: Optional[str] = None) -> None:
