@@ -86,10 +86,6 @@ Community Service — автономный REST API микросервис, от
 ### Вариант 1 — Docker (рекомендуется)
 
 ```bash
-# Сгенерировать проект
-python generate_project.py
-
-cd community-service
 
 # Поднять всё
 docker-compose up --build -d
