@@ -2,7 +2,7 @@
 from app.core.bootstrap import add_local_venv_site_packages
 
 add_local_venv_site_packages()
-
+#    image: bitnami/kafka:3.7 line 40 docker-compose
 import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -73,7 +73,7 @@ async def health_check():
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=settings.APP_PORT,
         reload=settings.DEBUG,
         workers=settings.WORKERS_COUNT,
