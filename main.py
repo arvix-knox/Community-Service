@@ -71,11 +71,12 @@ async def health_check():
 
 
 if __name__ == "__main__":
+    workers = 1 if settings.DEBUG else settings.WORKERS_COUNT
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=settings.APP_PORT,
         reload=settings.DEBUG,
-        workers=settings.WORKERS_COUNT,
+        workers=workers,
         log_level="info",
     )
