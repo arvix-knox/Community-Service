@@ -86,32 +86,35 @@ Community Service — автономный REST API микросервис, от
 ### Вариант 1 — Docker (рекомендуется)
 
 ```bash
+# 1) Подготовить окружение
+cp .env.example .env
 
-# Поднять всё
-docker-compose up --build -d
+# 2) Поднять инфраструктуру и приложение
+docker compose up --build -d
 
-# Проверить
-curl http://localhost:8000/health
+# 3) Проверить health-check
+curl http://localhost/health
 ```
 
-Swagger UI доступен по адресу `http://localhost:8000/api/docs` (при `DEBUG=true`).
+После старта через Nginx доступны:
+- API: `http://localhost/api/v1/...`
+- Swagger UI: `http://localhost/api/docs` (только при `DEBUG=true`)
+- MinIO Console: `http://localhost:9001`
 
 ### Вариант 2 — Локальная разработка
 
 ```bash
-cd community-service
-
-python -m venv venv
-source venv/bin/activate        # Linux / Mac
-# venv\Scripts\activate         # Windows
+python -m venv .venv
+source .venv/bin/activate       # Linux / Mac
+# .venv\Scripts\activate      # Windows
 
 pip install -r requirements.txt
+cp .env.example .env
 
-# Поднять БД и Redis
-docker-compose up -d postgres redis
+# Поднять инфраструктуру (минимум БД + Redis)
+docker compose up -d postgres redis
 
-# Миграции
-alembic revision --autogenerate -m "initial"
+# Применить миграции
 alembic upgrade head
 
 # Запуск
@@ -207,7 +210,9 @@ community-service/
 
 ## 📡 API Reference
 
-**Base URL:** `http://localhost:8000/api/v1`
+**Base URL (без Nginx):** `http://localhost:8000/api/v1`
+
+**Base URL (Docker + Nginx):** `http://localhost/api/v1`
 
 ### Аутентификация
 
@@ -492,10 +497,11 @@ pytest tests/ --cov=app --cov-report=html
 ### Горизонтальное масштабирование
 
 ```bash
-docker-compose up --scale community-app=5 -d
+docker compose up --scale community-app=5 -d
 ```
 
-Nginx балансирует нагрузку (`least_conn`).
+> ⚠️ Текущее `docker/nginx.conf` содержит один upstream (`community-app:8000`) и не делает балансировку между репликами автоматически.
+> Для реального scale добавьте сервис-дискавери (Traefik/HAProxy) или сгенерируйте upstream с несколькими контейнерами.
 
 ### Production-настройки
 
@@ -580,4 +586,3 @@ DEBUG=false
 **Community Service v1.0.0**
 
 </div>
-```
